@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: changeRollback
+      author: developer
+      changes:
+        - createTable:
+            tableName: history_log
+            columns:
+              - column:
+                  name: id
+                  type: int
+              - column:
+                  name: request
+                  type: clob
+              - column:
+                  name: response
+                  type: clob
+      rollback:
+        - dropTable:
+            tableName: history_log
+

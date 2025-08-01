@@ -1,0 +1,39 @@
+spring:
+  config:
+    import:
+      - classpath:properties/application-common.yml
+      - classpath:properties/application-feign.yml
+      - classpath:properties/application-logging.yml
+      - classpath:properties/application-management.yml
+      - classpath:properties/application-server.yml
+      - classpath:properties/application-kafka.yml
+
+  datasource:
+    url: jdbc:oracle:thin:@${DB_USER_HOST}:1521/${DB_USER_DATABASE}
+    username: ${DB_USERNAME}
+    password: ${DB_USER_PASSWORD}
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+
+    hikari:
+      connection-timeout: 10000
+      idle-timeout: 20000
+      max-lifetime: 100000
+      minimum-idle: 3
+      maximum-pool-size: 30
+      schema: ${DB_USERNAME}
+      leak-detection-threshold: 200000
+
+  jpa:
+    database: oracle
+    open-in-view: false
+    database-platform: org.hibernate.dialect.Oracle12gDialect
+    show-sql: true
+
+    hibernate:
+      ddl-auto: none
+
+  liquibase:
+    enabled: ${DB_LIQUIBASE_ENABLED}
+    default-schema: ${DB_USERNAME}
+    drop-first: false
+    change-log: classpath:db/changelog/db.changelog-master.yaml
