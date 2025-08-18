@@ -22,6 +22,7 @@ checkstyle {
 }
 
 repositories {
+    mavenCentral()
     maven {
         url "https://nexus.abb-bank.az/repository/abb-maven/"
         allowInsecureProtocol = true
@@ -34,8 +35,6 @@ repositories {
         }
         allowInsecureProtocol = true
     }
-
-    mavenCentral()
 }
 
 ext {
@@ -52,10 +51,9 @@ ext {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation 'org.codehaus.janino:janino'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.2.2'
     implementation "io.temporal:temporal-spring-boot-starter:$javaSDKVersion"
-    implementation "net.logstash.logback:logstash-logback-encoder:${logbackEncoderVersion}"
-    implementation 'ch.qos.logback:logback-classic:1.5.12'
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     implementation 'az.ibar.oracle.flexcube:FCUBSFTService:1.0'
