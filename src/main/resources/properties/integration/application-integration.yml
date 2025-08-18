@@ -1,0 +1,2 @@
+endpoints:
+  flex-customer-reader: ${FLEX_CUSTOMER_READER_ENDPOINT}
