@@ -1,0 +1,11 @@
+spring:
+  temporal:
+    namespace: abb-bank
+    connection:
+      target: 127.0.0.1:7233
+    workersAutoDiscovery:
+      packages:
+        - az.abb.customer
+    workers:
+      - name: customer-info-worker
+        task-queue: customer-info-task-queue
