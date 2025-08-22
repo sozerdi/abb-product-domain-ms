@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 public interface CustomerDetailsMapper {
     @Mapping(target = "base.name", source = "base.name")
     @Mapping(target = "personal.identification", source = "personal.id")
-    @Mapping(target = "personal.identification.pin", source = "personal.id.pinCode")
+    @Mapping(target = "personal.identification.pin", source = "personal.id.pin")
     CustomerDetailsDto toGlobal(CustomerDetailsIntegrationDto source);
 }
 
