@@ -1,4 +1,4 @@
-package az.abb.customer.integration.dto.info;
+package az.abb.customer.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -12,5 +12,5 @@ public class IdDto {
     private String issuingDate;
     private String maturityDate;
     private String issuedByAuthority;
-    private String pin;
+    private String pinCode;
 }
