@@ -1,31 +1,33 @@
 package az.abb.customer.activity;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import az.abb.customer.activity.impl.CustomerInfoActivityImpl;
 import az.abb.customer.dto.CustomerDetailsDto;
 import az.abb.customer.enums.CustomerFilterType;
 import az.abb.customer.service.CustomerInfoService;
+import io.temporal.testing.TestActivityEnvironment;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class CustomerInfoActivityImplTest {
+class CustomerInfoActivityImplTest {
 
     @Mock
     private CustomerInfoService customerInfoService;
 
-    @InjectMocks
+    private TestActivityEnvironment testEnvironment;
     private CustomerInfoActivityImpl activity;
 
     @BeforeEach
     void setup() {
         MockitoAnnotations.openMocks(this);
+        testEnvironment = TestActivityEnvironment.newInstance();
+        activity = new CustomerInfoActivityImpl(customerInfoService);
+        testEnvironment.registerActivitiesImplementations(activity);
     }
 
     @Test
@@ -39,8 +41,8 @@ public class CustomerInfoActivityImplTest {
         // Act
         List<CustomerDetailsDto> result = activity.getCustomerDetails(filterType, filterValue);
 
-
-        verify(customerInfoService, times(1)).getCustomerDetails(filterType, filterValue);
+        // Assert
+        assertEquals(mockResult, result);
     }
 
     @Test
@@ -55,7 +57,6 @@ public class CustomerInfoActivityImplTest {
         CustomerDetailsDto result = activity.getSingleCustomerDetail(filterType, filterValue);
 
         // Assert
-        verify(customerInfoService, times(1)).getSingleCustomerDetail(filterType, filterValue);
+        assertEquals(mockDto, result);
     }
-
 }
