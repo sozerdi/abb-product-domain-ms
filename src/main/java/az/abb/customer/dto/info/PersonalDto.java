@@ -1,4 +1,4 @@
-package az.abb.customer.integration.dto.info;
+package az.abb.customer.dto.info;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

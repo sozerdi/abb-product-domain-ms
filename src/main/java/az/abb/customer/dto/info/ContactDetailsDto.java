@@ -1,11 +1,11 @@
-package az.abb.customer.integration.dto.info;
+package az.abb.customer.dto.info;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Builder
 @Data
-public class ProfessionalContactDetailsDto {
+public class ContactDetailsDto {
 
     private String email;
     private String mobile1;
@@ -20,4 +20,6 @@ public class ProfessionalContactDetailsDto {
     private String relativeTelephone;
     private String friendTelephone;
     private String colleagueTelephone;
+    private String telephoneIsd;
+    private String mobileIsd;
 }

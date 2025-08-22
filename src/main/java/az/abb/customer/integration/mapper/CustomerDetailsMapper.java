@@ -1,7 +1,7 @@
 package az.abb.customer.integration.mapper;
 
 import az.abb.customer.dto.CustomerDetailsDto;
-import az.abb.customer.integration.dto.info.CustomerDetailsIntegrationDto;
+import az.abb.customer.dto.info.CustomerDetailsIntegrationDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

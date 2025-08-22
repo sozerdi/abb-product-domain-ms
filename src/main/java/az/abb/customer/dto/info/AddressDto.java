@@ -1,11 +1,11 @@
-package az.abb.customer.integration.dto.info;
+package az.abb.customer.dto.info;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class PlaceOfBirthDto {
+public class AddressDto {
 
     private String addressLine1;
     private String addressLine2;
@@ -13,6 +13,7 @@ public class PlaceOfBirthDto {
     private String addressLine4;
     private String city;
     private String index;
-    private String district;
     private String country;
+    private String district;
+
 }

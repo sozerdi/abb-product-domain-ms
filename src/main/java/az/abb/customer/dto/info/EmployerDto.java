@@ -1,4 +1,4 @@
-package az.abb.customer.integration.dto.info;
+package az.abb.customer.dto.info;
 
 import az.abb.customer.dto.AddressDto;
 import lombok.Builder;

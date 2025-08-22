@@ -1,12 +1,10 @@
 package az.abb.customer.dto;
 
-import az.abb.customer.integration.dto.info.IdDto;
-import lombok.AccessLevel;
+import az.abb.customer.dto.info.IdDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
