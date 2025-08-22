@@ -1,4 +1,4 @@
-package az.abb.customer.integration.dto;
+package az.abb.customer.dto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

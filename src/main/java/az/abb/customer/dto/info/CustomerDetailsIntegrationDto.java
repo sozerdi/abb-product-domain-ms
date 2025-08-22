@@ -1,8 +1,6 @@
-package az.abb.customer.integration.dto.info;
+package az.abb.customer.dto.info;
 
-import az.abb.customer.dto.CustomerBaseDto;
-import az.abb.customer.dto.PersonalInfoDto;
-import com.fasterxml.jackson.databind.JsonNode;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +14,10 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerDetailsIntegrationDto {
-    CustomerBaseDto base;
-    PersonalInfoDto personal;
-    JsonNode customAttributes;
+    private BaseDto base;
+    private PersonalDto personal;
+    private ProfessionalDto professional;
+    private AbsParamsDto absParams;
+    private List<UserDefinedFieldDto> userDefinedFields;
+    private CommunicationDto communication;
 }

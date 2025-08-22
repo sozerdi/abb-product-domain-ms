@@ -1,8 +1,8 @@
 package az.abb.customer.integration.client;
 
 import az.abb.customer.enums.CustomerFilterType;
-import az.abb.customer.integration.dto.ResponseDto;
-import az.abb.customer.integration.dto.info.CustomerDetailsIntegrationDto;
+import az.abb.customer.dto.ResponseDto;
+import az.abb.customer.dto.info.CustomerDetailsIntegrationDto;
 import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

@@ -1,17 +1,20 @@
 package az.abb.customer.dto;
 
-import lombok.AccessLevel;
+import az.abb.customer.dto.info.IdDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class PersonalInfoDto {
-    AddressDto registrationAddress;
+    private String firstName;
+    private String lastName;
+    private String middleName;
+    private String dateOfBirth;
+    private AddressDto registrationAddress;
+    private IdDto identification;
 }
