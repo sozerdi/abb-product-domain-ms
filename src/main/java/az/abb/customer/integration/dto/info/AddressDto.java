@@ -1,18 +1,12 @@
-package az.abb.customer.dto;
+package az.abb.customer.integration.dto.info;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddressDto {
+
     private String addressLine1;
     private String addressLine2;
     private String addressLine3;
@@ -21,4 +15,5 @@ public class AddressDto {
     private String index;
     private String country;
     private String district;
+
 }
