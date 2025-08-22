@@ -1,9 +1,9 @@
 package az.abb.customer.dto.info;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
-@Builder
+@SuperBuilder
 @Data
 public class ProfessionalContactDetailsDto {
 
