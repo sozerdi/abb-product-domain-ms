@@ -5,7 +5,11 @@ spring:
       target: 127.0.0.1:7233
     workersAutoDiscovery:
       packages:
-        - az.abb.customer
+        - az.abb.product
     workers:
-      - name: customer-info-worker
-        task-queue: customer-info-task-queue
+      - name: product-info-worker
+        task-queue: product-info-task-queue
+      - name: customer-products-worker
+        task-queue: customer-products-task-queue
+      - name: product-restriction-worker
+        task-queue: product-restriction-task-queue

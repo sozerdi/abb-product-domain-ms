@@ -1,2 +1,2 @@
 endpoints:
-  flex-customer-reader: ${FLEX_CUSTOMER_READER_ENDPOINT}
+  flex-currency-reader: ${FLEX_CURRENCY_READER_ENDPOINT}
