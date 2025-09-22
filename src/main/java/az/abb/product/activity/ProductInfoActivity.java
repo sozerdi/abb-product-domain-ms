@@ -7,5 +7,5 @@ import io.temporal.activity.ActivityInterface;
 @ActivityInterface
 public interface ProductInfoActivity {
 
-    ProductDto<?> getProductInfo(ProductRequest productRequest);
+    ProductDto getProductInfo(ProductRequest productRequest);
 }

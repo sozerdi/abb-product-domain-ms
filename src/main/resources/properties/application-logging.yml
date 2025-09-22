@@ -1,4 +1,6 @@
 logging:
   level:
     org.springframework: info
+    org.springframework.ai.tool: debug
     az.abb: info
+    io.modelcontextprotocol: debug

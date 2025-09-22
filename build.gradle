@@ -11,6 +11,12 @@ plugins {
 group = 'az.abb'
 version = '0.0.1-SNAPSHOT'
 
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -50,13 +56,13 @@ ext {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation 'org.codehaus.janino:janino'
-    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.2.2'
     implementation "io.temporal:temporal-spring-boot-starter:$javaSDKVersion"
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     implementation 'az.ibar.oracle.flexcube:FCUBSFTService:1.0'
+    implementation "org.springframework.ai:spring-ai-mcp-server-webflux-spring-boot-starter:1.0.0-M6"
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
 
@@ -68,6 +74,7 @@ dependencies {
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 }

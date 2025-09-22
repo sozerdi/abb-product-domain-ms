@@ -8,8 +8,8 @@ spring:
         - az.abb.product
     workers:
       - name: product-info-worker
-        task-queue: product-info-task-queue
+        task-queue: product-info-task-queue-local
       - name: customer-products-worker
-        task-queue: customer-products-task-queue
+        task-queue: customer-products-task-queue-local
       - name: product-restriction-worker
         task-queue: product-restriction-task-queue

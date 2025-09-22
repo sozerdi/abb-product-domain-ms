@@ -1,12 +1,11 @@
 package az.abb.product.dto.offlineproduct;
 
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 
 @Builder
-public record ProductRequest(IdentifierOptions identifierOptions,
-                             Boolean includeHidden,
-                             Set<ProductType> types,
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record ProductRequest(ProductType type,
                              String productNumber,
                              String productId) {
 }

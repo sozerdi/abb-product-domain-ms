@@ -3,6 +3,10 @@ server:
   servlet:
     application-display-name:
     context-path: /api
+  # Server configuration
+  netty:
+    connection-timeout: 20000
+    idle-timeout: 60s
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

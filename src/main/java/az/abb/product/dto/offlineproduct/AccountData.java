@@ -58,6 +58,7 @@ public class AccountData {
         private String name;
         private String cif;
         private String passportId;
+        private String pin;
     }
 
     @Getter

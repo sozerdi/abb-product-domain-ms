@@ -7,7 +7,8 @@ public enum ProductType {
     CARD,
     ACCOUNT,
     LOAN,
-    DEPOSIT;
+    DEPOSIT,
+    STORED_CARD;
 
     @Override
     public String toString() {

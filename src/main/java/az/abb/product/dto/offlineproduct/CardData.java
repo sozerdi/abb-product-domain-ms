@@ -21,9 +21,11 @@ public class CardData {
     private String network;
     private String bin;
     private String cardType;
+    private String cardTypeCode;
     private String usageType;
     private String status;
     private String statusCode;
+    private String statusProduction;
     private String mobileStatus;
     private String securityName;
     private String main;
@@ -34,6 +36,7 @@ public class CardData {
     private Contract contract;
 
     private String regNumber;
+    private String internalProductCode;
     private BigDecimal balance;
     private BigDecimal availableBalance;
     private BigDecimal blockedAmount;
@@ -66,6 +69,7 @@ public class CardData {
         private String name;
         private String cif;
         private String passportId;
+        private String pin;
     }
 
     @Getter
@@ -98,8 +102,7 @@ public class CardData {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Features {
         private Boolean pinEraseEligible;
-        @JsonProperty("avansEligible")
-        private Boolean avansEligible;
+        private Boolean advanceLoanEligible;
     }
 
     @Getter

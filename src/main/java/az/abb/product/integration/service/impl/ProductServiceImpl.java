@@ -1,219 +1,177 @@
 package az.abb.product.integration.service.impl;
 
-import az.abb.product.config.ProductServiceMockProperties;
+import static az.abb.product.enums.FilterType.CARD_NUMBER;
+
 import az.abb.product.dto.offlineproduct.AccountData;
 import az.abb.product.dto.offlineproduct.CardData;
 import az.abb.product.dto.offlineproduct.IdentifierOptions;
-import az.abb.product.dto.offlineproduct.OfflineProductsResponse;
 import az.abb.product.dto.offlineproduct.ProductDto;
+import az.abb.product.dto.offlineproduct.ProductFilterRequest;
+import az.abb.product.dto.offlineproduct.ProductListRequest;
 import az.abb.product.dto.offlineproduct.ProductRequest;
+import az.abb.product.dto.offlineproduct.ProductResponse;
 import az.abb.product.dto.offlineproduct.ProductType;
-import az.abb.product.integration.client.OfflineProductReaderFeignClient;
-import az.abb.product.service.MockProductDataService;
+import az.abb.product.enums.FilterType;
+import az.abb.product.integration.client.OfflineProductClient;
 import az.abb.product.service.ProductService;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Predicate;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
-    private final OfflineProductReaderFeignClient productReaderFeignClient;
-    private final MockProductDataService mockProductDataService;
-    private final ProductServiceMockProperties mockProperties;
+    private final OfflineProductClient offlineProductClient;
+    private final ObjectMapper objectMapper;
 
     @Override
-    public ProductDto<?> getProductInfo(ProductRequest requestDto) {
+    public Mono<ProductDto> getProductInfo(ProductRequest requestDto) {
         if (requestDto == null) {
-            return null;
-        }
-
-        // Check if mock mode is enabled
-        if (mockProperties.isEnabled()) {
-            log.info("Mock mode enabled, returning mock product data filtered by identifierOptions");
-            return getMockProduct(requestDto);
-        }
-
-        IdentifierOptions opts = requestDto.identifierOptions();
-        OfflineProductsResponse resp = productReaderFeignClient.getProducts(
-                opts != null ? opts.getUserId() : null,
-                opts != null ? opts.getCifs() : null,
-                opts != null ? opts.getPin() : null,
-                null, // cardNumbers not used here
-                requestDto.types(),
-                requestDto.includeHidden(),
-                null, // includeExpired
-                null, // default
-                null  // productCode
-        );
-
-        List<ProductDto<?>> products = resp == null ? null : resp.getProducts();
-        if (products == null || products.isEmpty()) {
-            return null;
+            return Mono.empty();
         }
 
         String productId = safeTrim(requestDto.productId());
-        
-        Predicate<ProductDto<?>> filter;
-        if (productId != null && !productId.isEmpty()) {
-            filter = p -> productId.equals(p.getId());
-        } else {
-            String productNumber = safeTrim(requestDto.productNumber());
-            if (productNumber != null && !productNumber.isEmpty()) {
-                filter = p -> productNumber.equals(extractProductNumber(p));
-            } else {
-                // Neither id nor number provided
-                return null;
-            }
-        }
-
-        return products.stream()
-                .filter(Objects::nonNull)
-                .filter(filter)
-                .findFirst()
-                .orElse(null);
-    }
-
-    private ProductDto<?> getMockProduct(ProductRequest requestDto) {
-        String productId = safeTrim(requestDto.productId());
-        
-        // Check if requesting specific product by ID
-        if (productId != null && !productId.isEmpty()) {
-            // Search in cards
-            var cards = mockProductDataService.createMockCardsBulk();
-            var foundCard = cards.stream().filter(p -> productId.equals(p.getId())).findFirst();
-            if (foundCard.isPresent()) {
-                return foundCard.get();
-            }
-            // Then in accounts
-            var accounts = mockProductDataService.createMockAccountsBulk();
-            var foundAcc = accounts.stream().filter(p -> productId.equals(p.getId())).findFirst();
-            if (foundAcc.isPresent()) {
-                return foundAcc.get();
-            }
-        }
-        
-        // Check if requesting specific product by number (or id) in the seed list
         String productNumber = safeTrim(requestDto.productNumber());
-        if (productNumber != null && !productNumber.isEmpty()) {
-            // Search in cards first
-            ProductDto<CardData> match = mockProductDataService.findMockCardByNumberOrId(productNumber);
-            if (match != null) {
-                return match;
-            }
-            // Try accounts by number (id is account number)
-            var accounts = mockProductDataService.createMockAccountsBulk();
-            var acc = accounts.stream().filter(p -> productNumber.equals(extractProductNumber(p))).findFirst();
-            if (acc.isPresent()) {
-                return acc.get();
-            }
-            // If specific product number requested but not found, return null
-            return null;
-        }
+        ProductType productType = requestDto.type();
         
-        // Check if requesting by PIN
-        IdentifierOptions opts = requestDto.identifierOptions();
-        if (opts != null && opts.getPin() != null && !opts.getPin().isEmpty()) {
-            // Search cards by PIN
-            List<ProductDto<CardData>> cards = mockProductDataService.createMockCardsBulk();
-            List<ProductDto<CardData>> pinFilteredCards = 
-                    mockProductDataService.filterCardsByIdentifierOptions(cards, opts);
-            if (!pinFilteredCards.isEmpty()) {
-                return pinFilteredCards.get(0);
-            }
-            
-            // Search accounts by PIN
-            var accounts = mockProductDataService.createMockAccountsBulk();
-            var pinFilteredAccounts = 
-                    mockProductDataService.filterAccountsByIdentifierOptions(accounts, opts);
-            if (!pinFilteredAccounts.isEmpty()) {
-                return pinFilteredAccounts.get(0);
-            }
+        if (productId != null && !productId.isEmpty()) {
+            // Get by product ID using the specified product type
+            FilterType filterType = getFilterTypeForProductType(productType);
+            return offlineProductClient.getProductDetail(filterType, productId)
+                    .map(this::convertProductResponseToDto)
+                    .doOnNext(response -> log.debug("Received product info: {}", 
+                            response != null ? response.getId() : "null"))
+                    .doOnError(error -> log.error("Error fetching product info", error));
+        } else if (productNumber != null && !productNumber.isEmpty()) {
+            // Get by product number using the specified product type
+            FilterType filterType = getFilterTypeForProductType(productType);
+            return offlineProductClient.getProductDetail(filterType, productNumber)
+                    .map(this::convertProductResponseToDto)
+                    .doOnNext(response -> log.debug("Received product info: {}", 
+                            response != null ? response.getId() : "null"))
+                    .doOnError(error -> log.error("Error fetching product info", error));
+        } else {
+            return Mono.empty();
         }
-
-        // Otherwise, honor identifierOptions by picking the first matching product
-        // Prefer CARD if requested
-        if (requestDto.types() == null || requestDto.types().contains(ProductType.CARD)) {
-            List<ProductDto<CardData>> cards = mockProductDataService.createMockCardsBulk();
-            List<ProductDto<CardData>> filtered = mockProductDataService.filterCardsByIdentifierOptions(cards, opts);
-            if (!filtered.isEmpty()) {
-                return filtered.get(0);
-            }
-        }
-        
-        // Fallback to ACCOUNT if requested and card not found
-        if (requestDto.types() == null || requestDto.types().contains(ProductType.ACCOUNT)) {
-            var accounts = mockProductDataService.createMockAccountsBulk();
-            var filtered = mockProductDataService.filterAccountsByIdentifierOptions(accounts, opts);
-            if (!filtered.isEmpty()) {
-                return filtered.get(0);
-            }
-        }
-
-        // If nothing matches, return null to mimic no results
-        return null;
     }
+
 
     private static String safeTrim(String s) {
         return s == null ? null : s.trim();
     }
 
-    private static String extractProductNumber(ProductDto<?> product) {
-        if (product == null || product.getType() == null || product.getData() == null) {
-            return null;
-        }
+    @Override
+    public Flux<ProductDto> getCustomerProducts(ProductListRequest requestDto) {
 
-        if (ProductType.CARD.equals(product.getType()) && product.getData() instanceof CardData cardData) {
-            return safeTrim(cardData.getNumber());
-        }
-
-        if (ProductType.ACCOUNT.equals(product.getType()) && product.getData() instanceof AccountData accountData) {
-            AccountData.AccountDetails details = accountData.getAccount();
-            return details == null ? null : safeTrim(details.getNumber());
-        }
-
-        return null;
+        // Use new V2 API for multiple products
+        IdentifierOptions opts = requestDto.identifierOptions();
+        
+        ProductFilterRequest filterRequest = buildProductFilterRequestFromProductListRequest(requestDto);
+        
+        return offlineProductClient.getProducts(
+                opts != null ? opts.getPin() : null,
+                opts != null && opts.getCifs() != null && !opts.getCifs().isEmpty() 
+                        ? opts.getCifs().iterator().next() : null,
+                opts != null ? opts.getUserId() : null,
+                filterRequest
+        )
+        .flatMapMany(Flux::fromIterable)
+        .map(this::convertProductResponseToDto)
+        .doOnNext(response -> log.debug("Received customer product: {}", response.getId()))
+        .doOnError(error -> log.error("Error fetching customer products", error));
     }
 
-    @Override
-    public List<ProductDto<?>> getCustomerProducts(ProductRequest requestDto) {
-        // Check if mock mode is enabled
-        if (mockProperties.isEnabled()) {
-            log.info("Mock mode enabled, returning mock customer products filtered by identifierOptions");
-            List<ProductDto<?>> productList = new ArrayList<>();
-            
-            if (requestDto.types().contains(ProductType.CARD)) {
-                IdentifierOptions opts = requestDto.identifierOptions();
-                List<ProductDto<CardData>> cards = mockProductDataService.createMockCardsBulk();
-                productList.addAll(mockProductDataService.filterCardsByIdentifierOptions(cards, opts));
-            }
-            if (requestDto.types().contains(ProductType.ACCOUNT)) {
-                IdentifierOptions opts = requestDto.identifierOptions();
-                var accounts = mockProductDataService.createMockAccountsBulk();
-                productList.addAll(mockProductDataService.filterAccountsByIdentifierOptions(accounts, opts));
-            }
-            return productList;
-        }
 
-        IdentifierOptions opts = requestDto.identifierOptions();
-        OfflineProductsResponse resp = productReaderFeignClient.getProducts(
-                opts != null ? opts.getUserId() : null,
-                opts != null ? opts.getCifs() : null,
-                opts != null ? opts.getPin() : null,
-                null,
-                Set.of(ProductType.CARD, ProductType.ACCOUNT),
-                Boolean.FALSE,
-                null,
-                null,
-                null
-        );
-        return resp == null ? null : resp.getProducts();
+    private ProductDto convertProductResponseToDto(ProductResponse response) {
+        if (response == null) {
+            return null;
+        }
+        
+        ProductDto dto = new ProductDto();
+        dto.setId(response.getId());
+        dto.setType(ProductType.valueOf(response.getType()));
+        
+        // Convert data based on type using ObjectMapper to handle LinkedHashMap
+        if (response.getData() != null) {
+            try {
+                if ("CARD".equals(response.getType())) {
+                    CardData cardData = objectMapper.convertValue(response.getData(), CardData.class);
+                    dto.setData(cardData);
+                } else if ("ACCOUNT".equals(response.getType())) {
+                    AccountData accountData = objectMapper.convertValue(response.getData(), AccountData.class);
+                    dto.setData(accountData);
+                }
+            } catch (Exception e) {
+                log.error("Error converting response data to DTO for type: {}", response.getType(), e);
+                dto.setData(null);
+            }
+        }
+        
+        return dto;
+    }
+
+
+    private ProductFilterRequest buildProductFilterRequestFromProductListRequest(ProductListRequest request) {
+        ProductFilterRequest.ProductFilterRequestBuilder builder = ProductFilterRequest.builder();
+        
+        // Set product types
+        if (request.types() != null && !request.types().isEmpty()) {
+            builder.types(request.types().stream()
+                    .map(ProductType::name)
+                    .collect(java.util.stream.Collectors.toList()));
+        }
+        
+        // Build filters based on product types
+        ProductFilterRequest.Filters.FiltersBuilder filtersBuilder = ProductFilterRequest.Filters.builder();
+        
+        // Check if we have CARD types
+        boolean hasCardTypes = request.types() != null 
+                && (request.types().contains(ProductType.CARD) || request.types().contains(ProductType.STORED_CARD));
+        
+        // Check if we have ACCOUNT types
+        boolean hasAccountTypes = request.types() != null && request.types().contains(ProductType.ACCOUNT);
+        
+        if (hasCardTypes) {
+            // Card filters
+            ProductFilterRequest.Filters.Card.CardBuilder cardBuilder = ProductFilterRequest.Filters.Card.builder();
+            cardBuilder.visible(request.hidden());
+            cardBuilder.primary(request.primary());
+            cardBuilder.expired(request.expired()); // Only for cards
+            filtersBuilder.card(cardBuilder.build());
+        }
+        
+        if (hasAccountTypes) {
+            // Account filters
+            ProductFilterRequest.Filters.Account.AccountBuilder accountBuilder = 
+                    ProductFilterRequest.Filters.Account.builder();
+            accountBuilder.visible(request.hidden());
+            accountBuilder.primary(request.primary());
+            // expired field is not set for accounts
+            filtersBuilder.account(accountBuilder.build());
+        }
+        
+        builder.filters(filtersBuilder.build());
+        return builder.build();
+    }
+
+    private FilterType getFilterTypeForProductType(ProductType productType) {
+        if (productType == null) {
+            // Default to CARD_NUMBER if no type specified
+            return CARD_NUMBER;
+        }
+        
+        switch (productType) {
+            case CARD:
+                return CARD_NUMBER;
+            case ACCOUNT:
+                return FilterType.ACCOUNT_NUMBER;
+            default:
+                return null;
+        }
     }
 }

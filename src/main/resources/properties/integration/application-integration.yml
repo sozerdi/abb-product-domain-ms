@@ -1,2 +1,4 @@
 endpoints:
   flex-currency-reader: ${FLEX_CURRENCY_READER_ENDPOINT}
+  transfer-ms: ${TRANSFER_MS_ENDPOINT:http://localhost:8081}
+  product-service-v2: ${PRODUCT_SERVICE_V2_ENDPOINT:http://localhost:8082}
